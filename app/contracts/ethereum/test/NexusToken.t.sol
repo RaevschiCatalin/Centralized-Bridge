@@ -1,41 +1,90 @@
+pragma solidity ^0.8.28;
 
-pragma solidity ^0.8.0;
-
-import "forge-std/Test.sol";
 import "../src/NexusToken.sol";
+import "forge-std/Test.sol";
 
 contract NexusTokenTest is Test {
-    NexusToken token;
-    address deployer = address(this);
+    NexusToken nexusToken;
+    address owner = address(this);
     address user = address(0x123);
 
     function setUp() public {
-        token = new NexusToken();
+
+        nexusToken = new NexusToken(
+            "NexusToken",
+            "NXT",
+            18,
+            owner
+        );
     }
+
+
 
     function testMint() public {
-        token.mint(user, 1000);
-        assertEq(token.balanceOf(user), 1000);
+        uint256 mintAmount = 100 * 10 ** nexusToken.decimals();
+
+
+        nexusToken.mint(user, mintAmount);
+
+
+        assertEq(nexusToken.balanceOf(user), mintAmount);
+
+
+        uint256 expectedSupply = 1000000000 * 10 ** nexusToken.decimals() + mintAmount;
+        assertEq(nexusToken.totalSupply(), expectedSupply);
     }
+
+    function testInitialSupply() public {
+        uint256 expectedSupply = 1000 * 10 ** 18;
+        assertEq(nexusToken.totalSupply(), expectedSupply);
+    }
+
+    function testMintRevertIfNotOwner() public {
+        vm.startPrank(user);
+        vm.expectRevert("Ownable: caller is not the owner");
+        nexusToken.mint(user, 1000);
+        vm.stopPrank();
+    }
+
+
 
     function testBurn() public {
-        token.mint(user, 1000);
-        vm.prank(user);
-        token.burn(500);
-        assertEq(token.balanceOf(user), 500);
+        uint256 burnAmount = 50 * 10 ** nexusToken.decimals();
+
+
+        nexusToken.burn(burnAmount);
+
+
+        uint256 expectedBalance = 1000000000 * 10 ** nexusToken.decimals() - burnAmount;
+        assertEq(nexusToken.balanceOf(owner), expectedBalance);
+
+
+        uint256 expectedSupply = 1000000000 * 10 ** nexusToken.decimals() - burnAmount;
+        assertEq(nexusToken.totalSupply(), expectedSupply);
     }
 
-    function testBurnFrom() public {
-        token.mint(user, 1000);
-        vm.prank(user);
-        token.approve(deployer, 500);
-        token.burnFrom(user, 500);
-        assertEq(token.balanceOf(user), 500);
+    function testBridgeMint() public {
+        uint256 mintAmount = 200 * 10 ** nexusToken.decimals();
+
+
+        nexusToken.bridgeMint(user, mintAmount);
+
+
+        assertEq(nexusToken.balanceOf(user), mintAmount);
+
+
+        uint256 expectedSupply = 1000000000 * 10 ** nexusToken.decimals() + mintAmount;
+        assertEq(nexusToken.totalSupply(), expectedSupply);
     }
 
-    function testOnlyOwnerCanMint() public {
-        vm.prank(user);
-        vm.expectRevert("Ownable: caller is not the owner");
-        token.mint(user, 1000);
+    function testBurnEmitEvent() public {
+        uint256 burnAmount = 30 * 10 ** nexusToken.decimals();
+
+
+        vm.expectEmit(true, true, true, true);
+        emit NexusToken.Bridged(owner, burnAmount, block.timestamp);
+
+
+        nexusToken.burn(burnAmount);
     }
 }

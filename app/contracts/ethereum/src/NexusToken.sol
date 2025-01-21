@@ -1,11 +1,18 @@
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.28;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract NexusToken is ERC20, Ownable {
-    constructor() ERC20("NexusToken", "NXT") {
-        _mint(msg.sender, 1000000000 * 10 ** decimals());
+    event Bridged(address indexed user, uint256 amount, uint256 timestamp);
+
+    constructor(
+        string memory name,
+        string memory symbol,
+        uint8 decimals,
+        address initialOwner
+    ) ERC20(name, symbol) Ownable(initialOwner) {
+        _mint(initialOwner, 1000 * 10 ** uint256(decimals));
     }
 
     function mint(address to, uint256 amount) external onlyOwner {
@@ -14,11 +21,10 @@ contract NexusToken is ERC20, Ownable {
 
     function burn(uint256 amount) external {
         _burn(msg.sender, amount);
+        emit Bridged(msg.sender, amount, block.timestamp);
     }
 
-    function burnFrom(address account, uint256 amount) external {
-        uint256 decreasedAllowance = allowance(account, msg.sender) - amount;
-        _approve(account, msg.sender, decreasedAllowance);
-        _burn(account, amount);
+    function bridgeMint(address to, uint256 amount) external onlyOwner {
+        _mint(to, amount);
     }
 }
