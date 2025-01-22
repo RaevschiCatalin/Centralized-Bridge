@@ -23,6 +23,13 @@ contract NexusToken is ERC20, Ownable {
         _burn(msg.sender, amount);
         emit Bridged(msg.sender, amount, block.timestamp);
     }
+    function burnFrom(address account, uint256 amount) external {
+        uint256 currentAllowance = allowance(account, msg.sender);
+        require(currentAllowance >= amount, "ERC20: burn amount exceeds allowance");
+        _approve(account, msg.sender, currentAllowance - amount);
+        _burn(account, amount);
+    }
+
 
     function bridgeMint(address to, uint256 amount) external onlyOwner {
         _mint(to, amount);

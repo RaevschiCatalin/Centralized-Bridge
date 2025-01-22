@@ -1,56 +1,19 @@
-module 0x1::nexus_token_tests {
-
-    use sui::coin::{Coin, TreasuryCap, mint, split, burn};
+module nexus_token::tests {
+    use sui::coin::{TreasuryCap, balance};
     use sui::tx_context::TxContext;
-    use sui::move_stdlib::address;
 
-    public struct NexusToken has copy, drop, store {}
+    #[test]
+    fun test_token_operations(ctx: &mut TxContext) {
+        let cap = TreasuryCap<NexusToken>{};
+        let alice = 0xA1;
+        let bob = 0xB2;
 
+        let alice_balance = balance<NexusToken>(&cap);
+        assert!(alice_balance.amount == 0, "Alice should have 0 tokens");
 
-    public fun mint_token(ctx: &mut TxContext, amount: u64): Coin<NexusToken> {
-
-        let cap: &mut TreasuryCap<NexusToken> = borrow_global_mut<TreasuryCap<NexusToken>>(address::address_of::<NexusToken>());
-
-
-        let coin = mint(cap, amount, ctx);
-
-        return coin;
+        // Example adjustments for balance checks
+        let bob_balance = balance<NexusToken>(&cap);
+        assert!(bob_balance.amount == 1000, "Bob should have 1000 tokens");
     }
 
-
-    public fun burn_token(ctx: &mut TxContext, coin: Coin<NexusToken>) {
-
-        let cap: &mut TreasuryCap<NexusToken> = borrow_global_mut<TreasuryCap<NexusToken>>(address::address_of::<NexusToken>());
-        burn(cap, coin, ctx);
-    }
-
-
-    public fun split_coin(ctx: &mut TxContext, coin: Coin<NexusToken>, amount: u64): Coin<NexusToken> {
-
-        let coin_a = split(coin, amount, ctx);
-
-        return coin_a;
-    }
-
-
-    public fun test_mint(ctx: &mut TxContext, amount: u64): Coin<NexusToken> {
-
-        let cap: &mut TreasuryCap<NexusToken> = borrow_global_mut<TreasuryCap<NexusToken>>(address::address_of::<NexusToken>());
-
-
-        let coin = mint(cap, amount, ctx);
-
-        return coin;
-    }
-
-
-    public fun test_burn_and_split(ctx: &mut TxContext, coin: Coin<NexusToken>, split_amount: u64): Coin<NexusToken> {
-
-        burn_token(ctx, coin);
-
-
-        let new_coin = split_coin(ctx, coin, split_amount);
-
-        return new_coin;
-    }
 }
