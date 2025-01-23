@@ -29,10 +29,11 @@ const SuiWallet = () => {
 
     return (
         <div className="space-y-4">
-
+            <h1 className="text-2xl font-semibold text-highlight">Sui Wallet</h1>
             {!currentAccount?.address && (
                 <div className="flex justify-center">
-                    <ConnectButton className="w-full py-3 px-5 bg-highlight text-primary rounded-full hover:scale-105 hover:shadow-xl transition-transform duration-300">
+                    <ConnectButton
+                        className="w-full py-3 px-5 bg-highlight text-primary rounded-full hover:scale-105 hover:shadow-xl transition-transform duration-300">
                         {currentAccount?.address ? "Connected to Sui" : "Connect Sui Wallet"}
                     </ConnectButton>
                 </div>
@@ -40,7 +41,7 @@ const SuiWallet = () => {
 
             {currentAccount?.address && (
                 <div className="text-center space-y-4">
-                    <h1 className="text-2xl font-semibold text-highlight">Sui Wallet</h1>
+
                     <div className="text-sm text-white">
                         <strong>Address:</strong>
                         <span className="ml-2 text-accent">{currentAccount.address}</span>
@@ -70,9 +71,6 @@ const SuiWallet = () => {
             )}
 
 
-            {!currentAccount?.address && (
-                <p className="text-center text-red-500 text-sm">Please connect your wallet to see your balance.</p>
-            )}
         </div>
     );
 };

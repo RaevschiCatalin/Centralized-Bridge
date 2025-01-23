@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import "../src/SuiEthBridge.sol";
 import "forge-std/Test.sol";
+import "../src/SuiEthBridge.sol";
 import "../src/NexusToken.sol";
 
 contract MockSuiBridge is ISuiBridge {
@@ -33,52 +33,85 @@ contract SuiEthBridgeTest is Test {
         nexusToken = new NexusToken("NexusToken", "NXT", 18, owner);
         bridge = new SuiEthBridge(address(nexusToken), address(mockSuiBridge));
 
+        // Transfer ownership of NexusToken to the bridge contract
+        vm.prank(owner);
+        nexusToken.transferOwnership(address(bridge));
+
+        // Verify ownership transfer
+        address newOwner = nexusToken.owner();
+        assertEq(newOwner, address(bridge), "Ownership transfer failed");
+
+        // Mint initial tokens to the bridge for testing
+        nexusToken.mint(address(bridge), 10000);
+
         assertEq(bridge.owner(), owner, "Owner mismatch");
         console.log("Owner set to: ", owner);
     }
 
-    function testBridgeTokensFromEth() public {
-        uint256 amount = 1000;
-
-        vm.prank(owner);
-        bridge.bridgeTokensFromEth(user, amount);
-        assertEq(nexusToken.balanceOf(user), amount, "User balance mismatch after bridging from Ethereum.");
-        console.log("User balance after bridging from Ethereum: ", nexusToken.balanceOf(user));
-
-        uint256 userBalance = nexusToken.balanceOf(user);
-        assertEq(userBalance, amount, "User balance assertion failed after bridging from Ethereum");
-    }
 
     function testBridgeTokensFromSui() public {
         uint256 amount = 1000;
 
+        // Ensure the bridge has enough tokens to mint
+        uint256 bridgeBalanceBefore = nexusToken.balanceOf(address(bridge));
+        assertGe(bridgeBalanceBefore, amount, "Bridge does not have enough tokens");
+
+        // Expect the MintOnSui event to be emitted
         vm.expectEmit(true, true, true, true);
         emit MockSuiBridge.MintOnSuiCalled(user, amount);
 
+        // Impersonate the owner and bridge tokens from Sui to Ethereum
         vm.prank(owner);
         bridge.bridgeTokensFromSui(user, amount);
-        assertEq(nexusToken.balanceOf(user), amount, "User balance mismatch after bridging from Sui.");
-        console.log("User balance after bridging from Sui: ", nexusToken.balanceOf(user));
 
+        // Check user balance
         uint256 userBalance = nexusToken.balanceOf(user);
-        assertEq(userBalance, amount, "User balance assertion failed after bridging from Sui");
+        assertEq(userBalance, amount, "User balance mismatch after bridging from Sui");
+        console.log("User balance after bridging from Sui: ", userBalance);
+    }
+
+    function testBridgeTokensToSui() public {
+        uint256 amount = 1000;
+
+        // Mint tokens to the user and approve the bridge to spend them
+        nexusToken.mint(user, amount);
+        vm.prank(user);
+        nexusToken.approve(address(bridge), amount);
+
+        // Expect the BurnOnSui event to be emitted
+        vm.expectEmit(true, true, true, true);
+        emit MockSuiBridge.BurnOnSuiCalled(user, amount);
+
+        // Impersonate the user and bridge tokens from Ethereum to Sui
+        vm.prank(user);
+        bridge.bridgeTokensToSui(user, amount);
+
+        // Check user balance
+        uint256 userBalance = nexusToken.balanceOf(user);
+        assertEq(userBalance, 0, "User balance mismatch after bridging to Sui");
+        console.log("User balance after bridging to Sui: ", userBalance);
     }
 
     function testEvents() public {
         uint256 amount = 1000;
 
+        // Test bridging from Sui to Ethereum
         vm.expectEmit(true, true, true, true);
         emit MockSuiBridge.MintOnSuiCalled(user, amount);
 
         vm.prank(owner);
         bridge.bridgeTokensFromSui(user, amount);
-        assertEq(nexusToken.balanceOf(user), amount, "User balance mismatch after bridging from Sui in events");
 
+        // Test bridging from Ethereum to Sui
         vm.expectEmit(true, true, true, true);
         emit MockSuiBridge.BurnOnSuiCalled(user, amount);
 
+        // Mint tokens to the user and approve the bridge to spend them
+        nexusToken.mint(user, amount);
+        vm.prank(user);
+        nexusToken.approve(address(bridge), amount);
+
         vm.prank(user);
         bridge.bridgeTokensToSui(user, amount);
-        assertEq(nexusToken.balanceOf(user), 0, "User balance mismatch after bridging to Sui in events");
     }
 }

@@ -34,4 +34,9 @@ contract NexusToken is ERC20, Ownable {
     function bridgeMint(address to, uint256 amount) external onlyOwner {
         _mint(to, amount);
     }
+
+    function transferOwnership(address newOwner) public override onlyOwner {
+        require(newOwner != address(0), "New owner is the zero address");
+        _transferOwnership(newOwner);
+    }
 }
