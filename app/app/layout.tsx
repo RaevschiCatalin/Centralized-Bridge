@@ -1,3 +1,4 @@
+import { Providers } from "./providers";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -20,9 +21,9 @@ export default function RootLayout({
     return (
         <html lang="en" className={`${geist.variable} ${geistMono.variable}`}>
         <body>
-
+        <Providers>
             {children}
-
+        </Providers>
         </body>
         </html>
     );
