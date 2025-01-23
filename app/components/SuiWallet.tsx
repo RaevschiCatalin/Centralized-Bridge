@@ -1,68 +1,76 @@
-"use client";
-
 import { useEffect, useState } from "react";
-import {  useCurrentAccount, useCurrentWallet } from "@mysten/dapp-kit";
-import { ConnectButton } from "@mysten/dapp-kit";
+import { useCurrentAccount,  ConnectButton, useDisconnectWallet } from "@mysten/dapp-kit";
+import { fetchSuiBalance } from "../utils/suiBallance";
 
 const SuiWallet = () => {
-
     const currentAccount = useCurrentAccount() || {};
-    const currentWallet = useCurrentWallet();
-
+    const { mutate: disconnect } = useDisconnectWallet();
 
     const [balance, setBalance] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
-        if (currentAccount) {
-            // Simulate fetching balance or use actual API
+        if (currentAccount?.address) {
             setIsLoading(true);
-            setTimeout(() => {
-                setBalance("100.5 SUI"); // Replace with real balance fetching logic
-                setIsLoading(false);
-            }, 1000);
+            const getBalance = async () => {
+                try {
+                    const balanceInSUI = await fetchSuiBalance(currentAccount.address);
+                    setBalance(balanceInSUI);
+                } catch (error) {
+                    setBalance("Error fetching balance");
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+
+            getBalance();
         }
-    }, [currentAccount]);
-    console.log(currentAccount);
+    }, [currentAccount?.address]);
+
     return (
-        <div className="space-y-6 max-w-xs mx-auto p-6 bg-gray-800 text-white rounded-lg shadow-xl">
+        <div className="space-y-4">
 
-            {/* Connect button */}
-
+            {!currentAccount?.address && (
                 <div className="flex justify-center">
-                    <ConnectButton className="w-full py-3 px-5 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition duration-200" />
-                </div>
-
-
-
-            {currentAccount && (
-                <div className="space-y-4">
-                    <div className="flex flex-col items-center">
-                        <p className="text-xl font-semibold">Wallet Connected</p>
-                        <p className="text-sm text-gray-400">Address:</p>
-                        <p className="text-lg text-blue-300 truncate">{currentAccount.address}</p>
-                    </div>
-
-                    {/* Balance display */}
-                    <div className="text-center">
-                        <p className="text-sm text-gray-400">Balance:</p>
-                        {isLoading ? (
-                            <p className="text-xl font-semibold text-gray-500">Loading...</p>
-                        ) : (
-                            <p className="text-xl font-semibold text-green-400">{balance}</p>
-                        )}
-                    </div>
-
-                    {/* Wallet name */}
-                    <div className="text-center mt-4">
-                        <p className="text-sm text-gray-400">Connected Wallet:</p>
-                        <p className="text-lg text-blue-200">{currentWallet?.name || "Unknown"}</p>
-                    </div>
+                    <ConnectButton className="w-full py-3 px-5 bg-highlight text-primary rounded-full hover:scale-105 hover:shadow-xl transition-transform duration-300">
+                        {currentAccount?.address ? "Connected to Sui" : "Connect Sui Wallet"}
+                    </ConnectButton>
                 </div>
             )}
 
-            {/* Message if no account is connected */}
-            {!currentAccount && (
+            {currentAccount?.address && (
+                <div className="text-center space-y-4">
+                    <h1 className="text-2xl font-semibold text-highlight">Sui Wallet</h1>
+                    <div className="text-sm text-white">
+                        <strong>Address:</strong>
+                        <span className="ml-2 text-accent">{currentAccount.address}</span>
+                    </div>
+
+
+                    <div className="text-sm text-gray-400">
+                        <strong className="text-accent">Balance:</strong>
+                        <span className="ml-2 text-white">{isLoading ? "Loading..." : balance}</span>
+                        <span className="text-green-400 ml-1">SUI</span>
+                    </div>
+
+
+                    <div className="mt-3 text-sm text-gray-400">
+                        <strong className="text-white">Label:</strong>
+                        <span className="ml-2 text-accent">{currentAccount.label || "Unknown"}</span>
+                    </div>
+
+
+                    <button
+                        onClick={() => disconnect()}
+                        className="w-full py-3 px-5 bg-red-500 text-white rounded-full hover:scale-105 hover:shadow-xl transition-transform duration-300"
+                    >
+                        Disconnect Wallet
+                    </button>
+                </div>
+            )}
+
+
+            {!currentAccount?.address && (
                 <p className="text-center text-red-500 text-sm">Please connect your wallet to see your balance.</p>
             )}
         </div>
