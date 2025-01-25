@@ -1,5 +1,5 @@
 # Compiler files
-cache/
+../../ethereum/cache/
 out/
 
 # Ignores development broadcast logs

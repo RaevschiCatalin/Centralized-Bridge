@@ -1,0 +1,35 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "../lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
+import "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
+
+contract NexusToken is ERC20, Ownable {
+    mapping(address => uint256) private _lockedBalances;
+
+    constructor(address initialOwner) ERC20("Nexus Token", "NEX") Ownable(initialOwner) {}
+
+    function mint(address to, uint256 amount) public onlyOwner {
+        _mint(to, amount);
+    }
+
+    function burn(uint256 amount) public onlyOwner {
+        _burn(msg.sender, amount);
+    }
+
+    function lock(address user, uint256 amount) public onlyOwner {
+        require(balanceOf(user) >= amount, "Insufficient balance");
+        _transfer(user, address(this), amount);
+        _lockedBalances[user] += amount;
+    }
+
+    function unlock(address user, uint256 amount) public onlyOwner {
+        require(_lockedBalances[user] >= amount, "Insufficient locked balance");
+        _lockedBalances[user] -= amount;
+        _transfer(address(this), user, amount);
+    }
+
+    function lockedBalanceOf(address user) public view returns (uint256) {
+        return _lockedBalances[user];
+    }
+}
