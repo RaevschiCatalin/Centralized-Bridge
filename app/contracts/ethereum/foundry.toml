@@ -1,9 +1,0 @@
-[profile.default]
-src = "src"
-out = "out"
-libs = ["lib"]
-rpc_url = "https://goerli.infura.io/v3/ba0264bd03b041038e387e3c2033c199"
-private_key = "743c48f635f1d3839ba8d63f9cb1a958fdfbe0ce909d000f503d597fece1c2d1"
-[etherscan]
-sepolia = { key = "7TH4E9M2FXZG1D8G95376KHQC538FV3WI6" }
-# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
