@@ -9,26 +9,41 @@ contract NexusToken is ERC20, Ownable {
 
     constructor(address initialOwner) ERC20("Nexus Token", "NEX") Ownable(initialOwner) {}
 
+    /// /// /// /// /// ///
+    /// minting tokens ///
+    /// /// /// /// /// ///
     function mint(address to, uint256 amount) public onlyOwner {
         _mint(to, amount);
     }
 
+    /// /// /// /// /// ///
+    /// burning tokens ///
+    /// /// /// /// /// ///
     function burn(uint256 amount) public onlyOwner {
         _burn(msg.sender, amount);
     }
 
+    /// /// /// /// /// ///
+    /// locking tokens ///
+    /// /// /// /// /// ///
     function lock(address user, uint256 amount) public onlyOwner {
         require(balanceOf(user) >= amount, "Insufficient balance");
         _transfer(user, address(this), amount);
         _lockedBalances[user] += amount;
     }
 
+    /// /// /// /// /// ///
+    /// unlocking tokens ///
+    /// /// /// /// /// ///
     function unlock(address user, uint256 amount) public onlyOwner {
         require(_lockedBalances[user] >= amount, "Insufficient locked balance");
         _lockedBalances[user] -= amount;
         _transfer(address(this), user, amount);
     }
 
+    /// /// /// /// /// ///
+    /// checking locked ///
+    /// /// /// /// /// ///
     function lockedBalanceOf(address user) public view returns (uint256) {
         return _lockedBalances[user];
     }
