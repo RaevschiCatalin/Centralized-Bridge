@@ -3,6 +3,7 @@
 /// /// /// /// ///
 module nexus_token::nexus_token {
     use sui::dynamic_field as df;
+    use sui::event;
 
     const DEPLOYER_ADDRESS: address = @0x195db0a3f4e5651cd5f608cedd9b3bcb57895cce075f41382d29e4ac6b860ca7;
 
@@ -29,6 +30,20 @@ module nexus_token::nexus_token {
     public struct UserLockedBalance has copy, drop, store {
         user: address,
     }
+
+    /// /// /// ///
+    /// Events ///
+    /// /// /// ///
+    public struct LockEvent has copy, drop {
+        user: address,
+        amount: u64,
+    }
+
+    public struct UnlockEvent has copy, drop {
+        user: address,
+        amount: u64,
+    }
+
 
     /// /// /// /// ///
     /// Deployer struct ///
@@ -97,7 +112,8 @@ module nexus_token::nexus_token {
                 amount: amount,
             };
             df::add(&mut deployer.id, user_locked_balance, locked);
-        }
+        };
+        event::emit(LockEvent { user, amount });
     }
 
     /// /// /// /// ///
@@ -121,6 +137,8 @@ module nexus_token::nexus_token {
             balance: amount,
         };
         transfer::transfer(nexus_token, user);
+        event::emit(UnlockEvent { user, amount });
+
 
         if (locked_balance.amount == 0) {
             let locked_balance_value: LockedBalance = df::remove(&mut deployer.id, user_locked_balance);

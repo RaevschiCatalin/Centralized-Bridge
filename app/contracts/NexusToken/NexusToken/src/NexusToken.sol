@@ -34,7 +34,7 @@ contract NexusToken is ERC20, Ownable {
         require(balanceOf(user) >= amount, "Insufficient balance");
         _transfer(user, address(this), amount);
         _lockedBalances[user] += amount;
-        emit Locked(user, amount);
+        emit Locked(msg.sender, amount);
     }
 
     /// /// /// /// /// ///

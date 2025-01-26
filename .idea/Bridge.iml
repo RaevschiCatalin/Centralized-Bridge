@@ -6,7 +6,7 @@
       <excludeFolder url="file://$MODULE_DIR$/.venv" />
       <excludeFolder url="file://$MODULE_DIR$/app/contracts/sui/nexus_token/build" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.12 virtualenv at ~/repos/Bridge/venv" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.13 virtualenv at ~/repos/Bridge/app/backend/venv" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

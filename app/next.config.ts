@@ -1,6 +1,8 @@
+import {NextConfig} from "next";
+
 const nextConfig: NextConfig = {
     experimental: {
-        appDir: true,
+        // appDir: true,
     },
     webpack: (config) => {
         return config; // Use Webpack without additional configuration
