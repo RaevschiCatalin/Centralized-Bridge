@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useCurrentAccount, ConnectButton, useDisconnectWallet } from "@mysten/dapp-kit";
-import { fetchSuiBalance } from "../utils/suiBallance";
+import { suiService } from "../utils/suiBallance";
 
 interface SuiAccount {
   address: string;
@@ -19,7 +19,8 @@ const SuiWallet = () => {
       setIsLoading(true);
       const getBalance = async () => {
         try {
-          const balanceInSUI = await fetchSuiBalance(currentAccount.address);
+          const balanceInSUI = await suiService.getBalance(currentAccount.address);
+          //@ts-ignore
           setBalance(balanceInSUI);
         } catch (error) {
           setBalance("Error fetching balance");

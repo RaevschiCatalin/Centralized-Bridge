@@ -15,7 +15,7 @@ services:
       - backend
 
   backend:
-    container_name: fastapi_app
+    container_name: bridge_backend
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -37,6 +37,13 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
 
 volumes:
   postgres_data:

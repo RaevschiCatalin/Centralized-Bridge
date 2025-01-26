@@ -1,26 +1,24 @@
-# Use the official Python image
-FROM python:3.12-slim
+# Use Node.js LTS
+FROM node:18
 
-# Install build dependencies
-RUN apt-get update && apt-get install -y \
-    gcc \
-    python3-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# Set the working directory
+# Set working directory
 WORKDIR /app
 
-# Copy the requirements file
-COPY requirements.txt .
+# Copy package.json and pnpm-lock.yaml
+COPY package.json pnpm-lock.yaml ./
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install pnpm and dependencies
+RUN npm install -g pnpm
+RUN pnpm install
 
-# Copy the rest of the application code
+# Copy the rest of the backend code
 COPY . .
 
-# Expose the port the app runs on
+# Build the TypeScript code
+RUN pnpm build
+
+# Expose the backend port
 EXPOSE 8080
 
-# Start the app
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080", "--reload"]
+# Start the backend
+CMD ["pnpm", "dev"]
