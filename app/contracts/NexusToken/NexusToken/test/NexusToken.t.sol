@@ -10,6 +10,10 @@ contract NexusTokenTest is Test {
     address private owner;
     address private user;
 
+    event Locked(address indexed user, uint256 amount);
+    event Unlocked(address indexed user, uint256 amount);
+
+
     function setUp() public {
         owner = address(this);
         user = address(0x123);
@@ -34,6 +38,11 @@ contract NexusTokenTest is Test {
         uint256 mintAmount = 1000;
         uint256 lockAmount = 500;
         nexusToken.mint(user, mintAmount);
+
+        vm.expectEmit(true, true, true, true);
+        emit Locked(user, lockAmount);
+
+
         nexusToken.lock(user, lockAmount);
         assertEq(nexusToken.lockedBalanceOf(user), lockAmount);
         assertEq(nexusToken.balanceOf(user), mintAmount - lockAmount);
@@ -45,6 +54,10 @@ contract NexusTokenTest is Test {
         uint256 unlockAmount = 300;
         nexusToken.mint(user, mintAmount);
         nexusToken.lock(user, lockAmount);
+
+        vm.expectEmit(true, true, true, true);
+        emit Unlocked(user, unlockAmount);
+
         nexusToken.unlock(user, unlockAmount);
         assertEq(nexusToken.lockedBalanceOf(user), lockAmount - unlockAmount);
         assertEq(nexusToken.balanceOf(user), mintAmount - lockAmount + unlockAmount);

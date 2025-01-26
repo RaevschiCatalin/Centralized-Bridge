@@ -6,6 +6,10 @@ import "../lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 
 contract NexusToken is ERC20, Ownable {
     mapping(address => uint256) private _lockedBalances;
+    event Locked(address indexed user, uint256 amount);
+    event Unlocked(address indexed user, uint256 amount);
+
+
 
     constructor(address initialOwner) ERC20("Nexus Token", "NEX") Ownable(initialOwner) {}
 
@@ -30,6 +34,7 @@ contract NexusToken is ERC20, Ownable {
         require(balanceOf(user) >= amount, "Insufficient balance");
         _transfer(user, address(this), amount);
         _lockedBalances[user] += amount;
+        emit Locked(user, amount);
     }
 
     /// /// /// /// /// ///
@@ -39,6 +44,7 @@ contract NexusToken is ERC20, Ownable {
         require(_lockedBalances[user] >= amount, "Insufficient locked balance");
         _lockedBalances[user] -= amount;
         _transfer(address(this), user, amount);
+        emit Unlocked(user, amount);
     }
 
     /// /// /// /// /// ///
